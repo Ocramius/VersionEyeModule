@@ -1,0 +1,28 @@
+{
+    "name":         "ocramius/version-eye-module",
+    "description":  "VersionEye Module for Zend Framework 2",
+    "type":         "library",
+    "license":      "MIT",
+    "keywords":     ["zf2", "version eye", "module"],
+    "homepage":     "https://github.com/Ocramius/VersionEyeModule",
+    "authors":      [
+        {
+            "name":     "Marco Pivetta",
+            "email":    "ocramius@gmail.com",
+            "homepage": "http://ocramius.github.com/"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require":      {
+        "zendframework/zend-mvc": ">=2.0,<=2.2.x-dev",
+        "zendframework/zend-http": ">=2.0,<=2.2.x-dev"
+    },
+    "require-dev":  {
+        "zendframework/zend-developer-tools": "dev-master"
+    },
+    "autoload":     {
+        "psr-0": {
+            "VersionEyeModule\\": "src/"
+        }
+    }
+}
