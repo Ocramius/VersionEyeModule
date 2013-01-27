@@ -1,3 +1,7 @@
 build
 build.properties
 clover.xml
+vendor
+composer.lock
+composer.phar
+cache.properties
