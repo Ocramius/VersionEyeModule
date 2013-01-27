@@ -63,6 +63,8 @@ class ApiService
      * given an array representing the project's `composer.json`
      *
      * @param array $definitions contents of a `composer.json` to be submitted
+     *
+     * @return array|bool
      */
     public function postComposerDefinitions(array $definitions)
     {

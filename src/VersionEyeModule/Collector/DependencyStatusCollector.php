@@ -98,7 +98,7 @@ class DependencyStatusCollector implements CollectorInterface, \Serializable
             return;
         }
 
-        $data = $this->cache->getItem($this->cacheKey, $success);
+        $data = $this->cache->getItem($this->cacheKey);
 
         if (is_array($data)) {
             $this->collected = $data;
@@ -140,11 +140,13 @@ class DependencyStatusCollector implements CollectorInterface, \Serializable
      */
     public function serialize()
     {
-        return serialize(array(
-            'collected'    => $this->collected,
-            'cacheKey'     => $this->cacheKey,
-            'composerPath' => $this->composerPath
-        ));
+        return serialize(
+            array(
+                'collected'    => $this->collected,
+                'cacheKey'     => $this->cacheKey,
+                'composerPath' => $this->composerPath
+            )
+        );
     }
 
     /**

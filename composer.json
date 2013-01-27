@@ -14,11 +14,12 @@
     ],
     "minimum-stability": "dev",
     "require":      {
-        "zendframework/zend-mvc": ">=2.0,<=2.2.x-dev",
+        "zendframework/zend-mvc":  ">=2.0,<=2.2.x-dev",
         "zendframework/zend-http": ">=2.0,<=2.2.x-dev"
     },
     "require-dev":  {
-        "zendframework/zend-developer-tools": "dev-master"
+        "zendframework/zend-developer-tools": "dev-master",
+        "squizlabs/php_codesniffer":          "1.*"
     },
     "autoload":     {
         "psr-0": {

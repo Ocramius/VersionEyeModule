@@ -4,7 +4,7 @@
 
     <target name="build-parallel" depends="install,prepare,lint,tools-parallel,phpunit,phpcb"/>
 
-    <target name="travis" depends="install,prepare,install-composer-available">
+    <target name="travis" depends="install-composer-available,prepare">
         <parallel threadCount="2">
             <antcall target="lint"/>
             <antcall target="phpcs-ci"/>
@@ -64,6 +64,7 @@
             <arg value="${basedir}/composer.phar" />
             <arg value="update" />
             <arg value="--prefer-dist" />
+            <arg value="--dev" />
         </exec>
     </target>
 
@@ -71,6 +72,7 @@
         <exec executable="composer" failonerror="true">
             <arg value="update" />
             <arg value="--prefer-source" />
+            <arg value="--dev" />
         </exec>
     </target>
 
@@ -137,14 +139,14 @@
 
     <target name="phpcs"
             description="Find coding standard violations using PHP_CodeSniffer and print human readable output. Intended for usage on the command line before committing.">
-        <exec executable="phpcs">
+        <exec executable="vendor/bin/phpcs">
             <arg value="--standard=PSR2" />
             <arg path="${basedir}/src" />
         </exec>
     </target>
 
     <target name="phpcs-ci" description="Find coding standard violations using PHP_CodeSniffer creating a log file for the continuous integration server">
-        <exec executable="phpcs" failonerror="true">
+        <exec executable="vendor/bin/phpcs" failonerror="true">
             <arg value="--standard=PSR2" />
             <arg path="${basedir}/src" />
         </exec>
