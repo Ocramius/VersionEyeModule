@@ -35,7 +35,7 @@ class DependencyStatusCollectorFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $factory        = new DependencyStatusCollectorFactory();
         $cache          = $this->getMock('Zend\\Cache\\Storage\\StorageInterface');
-        $api            = $this->getMock('VersionEyeModule\\Service\\ApiService', array(), array(), '', false);
+        $api            = $this->getMock('Rs\VersionEye\Client', array(), array(), '', false);
 
         $serviceLocator = $this->getMock('Zend\\ServiceManager\\ServiceLocatorInterface');
 

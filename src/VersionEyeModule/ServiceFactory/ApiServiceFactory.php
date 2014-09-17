@@ -18,12 +18,13 @@
 
 namespace VersionEyeModule\ServiceFactory;
 
-use VersionEyeModule\Service\ApiService;
+use Rs\VersionEye\Client;
+use Rs\VersionEye\Http\ZendClient;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
- * Service factory responsible for instantiating an {@see \VersionEyeModule\Service\ApiService}
+ * Service factory responsible for instantiating an {@see \Rs\VersionEye\Client}
  *
  * @license MIT
  * @author  Marco Pivetta <ocramius@gmail.com>
@@ -33,14 +34,16 @@ class ApiServiceFactory implements FactoryInterface
     /**
      * {@inheritDoc}
      *
-     * @return \VersionEyeModule\Service\ApiService
+     * @return \Rs\VersionEye\Client
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
         /* @var $httpClient \Zend\Http\Client */
-        $httpClient = $serviceLocator->get('VersionEyeModule\\Service\\HttpClient');
         $config = $serviceLocator->get('Config');
 
-        return new ApiService($httpClient, $config['version_eye_module']['api_key']);
+        $client = new Client(new ZendClient($config['version_eye_module']['endpoint']));
+        $client->authorize($config['version_eye_module']['api_key']);
+
+        return $client;
     }
 }

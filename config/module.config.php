@@ -19,6 +19,7 @@
 return array(
     'version_eye_module' => array(
         'api_key' => '',
+        'endpoint' => 'https://www.versioneye.com/api/v2/',
         'cache'   => array(
             'adapter' => array(
                 'name' => 'filesystem',
@@ -39,9 +40,6 @@ return array(
     ),
 
     'service_manager' => array(
-        'invokables' => array(
-            'VersionEyeModule\\Service\\HttpClient'   => 'Zend\\Http\\Client',
-        ),
         'factories' => array(
             'VersionEyeModule\\Service\\ApiService'   => 'VersionEyeModule\\ServiceFactory\\ApiServiceFactory',
             'VersionEyeModule\\Cache\\StorageAdapter' => 'VersionEyeModule\\ServiceFactory\\CacheFactory',

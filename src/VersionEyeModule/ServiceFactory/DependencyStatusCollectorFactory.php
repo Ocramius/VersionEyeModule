@@ -37,13 +37,12 @@ class DependencyStatusCollectorFactory implements FactoryInterface
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        /* @var $api \VersionEyeModule\Service\ApiService */
+        /* @var $api \Rs\VersionEye\Client */
         $api = $serviceLocator->get('VersionEyeModule\\Service\\ApiService');
         /* @var $cache \Zend\Cache\Storage\StorageInterface */
         $cache = $serviceLocator->get('VersionEyeModule\\Cache\\StorageAdapter');
         /* @var $config array */
         $config = $serviceLocator->get('Config');
-
 
         $composerPath = $config['version_eye_module']['composer_json'];
         $cacheKey     = $config['version_eye_module']['collector_cache_key'];
