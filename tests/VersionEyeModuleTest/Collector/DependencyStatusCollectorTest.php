@@ -18,19 +18,20 @@
 
 namespace VersionEyeModuleTest\Collector;
 
+use Rs\VersionEye\Client;
 use VersionEyeModule\Collector\DependencyStatusCollector;
-use VersionEyeModule\ServiceFactory\DependencyStatusCollectorFactory;
 
 /**
  * Tests for {@see \VersionEyeModule\Collector\DependencyStatusCollector}
  *
  * @license MIT
  * @author  Marco Pivetta <ocramius@gmail.com>
+ * @covers \VersionEyeModule\Collector\DependencyStatusCollector
  */
 class DependencyStatusCollectorTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var \PHPUnit_Framework_MockObject_MockObject|\VersionEyeModule\Service\ApiService
+     * @var \PHPUnit_Framework_MockObject_MockObject|\Rs\VersionEye\Client
      */
     protected $api;
 
@@ -43,14 +44,13 @@ class DependencyStatusCollectorTest extends \PHPUnit_Framework_TestCase
      * @var DependencyStatusCollector
      */
     protected $collector;
+    private $http;
 
-    /**
-     * @covers \VersionEyeModule\Collector\DependencyStatusCollector::__construct
-     */
     public function setUp()
     {
         $this->cache     = $this->getMock('Zend\\Cache\\Storage\\StorageInterface');
-        $this->api       = $this->getMock('VersionEyeModule\\Service\\ApiService', array(), array(), '', false);
+        $this->http      = $this->getMock('Rs\VersionEye\Http\ZendClient', array(), array(), '', false);
+        $this->api       = new Client($this->http);
         $this->collector = new DependencyStatusCollector(
             $this->api,
             $this->cache,
@@ -59,75 +59,56 @@ class DependencyStatusCollectorTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    /**
-     * @covers \VersionEyeModule\Collector\DependencyStatusCollector::collect
-     * @covers \VersionEyeModule\Collector\DependencyStatusCollector::getCollectedDependencyStatuses
-     */
     public function testCollectWithValidCache()
     {
-        $test = $this;
+        $this->http->expects($this->never())->method('request');
+
         $this
             ->cache
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
             ->method('getItem')
-            ->will($this->returnCallback(function ($key) use ($test) {
-                $test->assertSame('test_cache_key', $key);
-
-                return array('data');
-            }));
+            ->will($this->returnValueMap(array(
+                array('test_cache_key'.DependencyStatusCollector::CACHE_KEY_SUFFIX,null,null, 'foo'),
+                array('test_cache_key'.DependencyStatusCollector::CACHE_DATA_SUFFIX,null,null, array('data'))
+            )));
 
         $this->collector->collect($this->getMock('Zend\\Mvc\\MvcEvent'));
         $this->assertSame(array('data'), $this->collector->getCollectedDependencyStatuses());
     }
 
-    /**
-     * @covers \VersionEyeModule\Collector\DependencyStatusCollector::collect
-     * @covers \VersionEyeModule\Collector\DependencyStatusCollector::getCollectedDependencyStatuses
-     */
     public function testCollectWithoutValidCache()
     {
-        $this
-            ->api
-            ->expects($this->once())
-            ->method('postComposerDefinitions')
-            ->with($this->callback(function ($data) {
-                return 'ocramius/version-eye-module' === $data['name'];
-            }))
-            ->will($this->returnValue(array('data')));
+        $this->http->expects($this->atLeastOnce())->method('request')->will($this->returnValueMap([
+            ['GET', 'projects', [], [['name' => 'ocramius/version-eye-module', 'project_key'=>'foo']]],
+            ['POST', 'projects/foo', ['project_file' => __DIR__ . '/../../../composer.json'], []]
+        ]));
 
         $this
             ->cache
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
             ->method('setItem')
-            ->with('test_cache_key', array('data'));
+        ;
 
         $this->collector->collect($this->getMock('Zend\\Mvc\\MvcEvent'));
-        $this->assertSame(array('data'), $this->collector->getCollectedDependencyStatuses());
+        $this->assertSame(array(), $this->collector->getCollectedDependencyStatuses());
     }
 
-    /**
-     * @covers \VersionEyeModule\Collector\DependencyStatusCollector::collect
-     * @covers \VersionEyeModule\Collector\DependencyStatusCollector::getCollectedDependencyStatuses
-     * @covers \VersionEyeModule\Collector\DependencyStatusCollector::serialize
-     * @covers \VersionEyeModule\Collector\DependencyStatusCollector::unserialize
-     */
     public function testCanSerializeAndUnserialize()
     {
-        $this
-            ->api
-            ->expects($this->once())
-            ->method('postComposerDefinitions')
-            ->will($this->returnValue(array('data')));
+        $this->http->expects($this->atLeastOnce())->method('request')->will($this->returnValueMap([
+            ['GET', 'projects', [], [['name' => 'ocramius/version-eye-module', 'project_key'=>'foo']]],
+            ['POST', 'projects/foo', ['project_file' => __DIR__ . '/../../../composer.json'], []]
+        ]));
 
         $this->collector->collect($this->getMock('Zend\\Mvc\\MvcEvent'));
 
         /* @var $collector \VersionEyeModule\Collector\DependencyStatusCollector */
         $collector = unserialize(serialize($this->collector));
 
-        $this->assertSame(array('data'), $collector->getCollectedDependencyStatuses());
+        $this->assertSame(array(), $collector->getCollectedDependencyStatuses());
 
         $collector->collect($this->getMock('Zend\\Mvc\\MvcEvent'));
 
-        $this->assertSame(array('data'), $collector->getCollectedDependencyStatuses());
+        $this->assertSame(array(), $collector->getCollectedDependencyStatuses());
     }
 }

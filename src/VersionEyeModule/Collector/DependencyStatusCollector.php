@@ -18,7 +18,8 @@
 
 namespace VersionEyeModule\Collector;
 
-use VersionEyeModule\Service\ApiService;
+use Rs\VersionEye\Client;
+use Rs\VersionEye\Http\CommunicationException;
 use Zend\Cache\Storage\StorageInterface;
 use Zend\Mvc\MvcEvent;
 use ZendDeveloperTools\Collector\CollectorInterface;
@@ -32,14 +33,16 @@ use ZendDeveloperTools\Collector\CollectorInterface;
 class DependencyStatusCollector implements CollectorInterface, \Serializable
 {
     const DEFAULT_PRIORITY = 100;
+    const CACHE_KEY_SUFFIX = '.project';
+    const CACHE_DATA_SUFFIX = '.data';
 
     /**
-     * @var \VersionEyeModule\Service\ApiService|null
+     * @var Client
      */
     protected $api;
 
     /**
-     * @var \Zend\Cache\Storage\StorageInterface|null
+     * @var StorageInterface
      */
     protected $cache;
 
@@ -59,12 +62,12 @@ class DependencyStatusCollector implements CollectorInterface, \Serializable
     protected $collected;
 
     /**
-     * @param \VersionEyeModule\Service\ApiService $api
-     * @param \Zend\Cache\Storage\StorageInterface $cache
-     * @param string                               $composerPath path to the composer.json file
-     * @param string                               $cacheKey
+     * @param Client           $api
+     * @param StorageInterface $cache
+     * @param string           $composerPath path to the composer.json file
+     * @param string           $cacheKey
      */
-    public function __construct(ApiService $api, StorageInterface $cache, $composerPath, $cacheKey)
+    public function __construct(Client $api, StorageInterface $cache, $composerPath, $cacheKey)
     {
         $this->api          = $api;
         $this->cache        = $cache;
@@ -93,38 +96,15 @@ class DependencyStatusCollector implements CollectorInterface, \Serializable
      */
     public function collect(MvcEvent $mvcEvent)
     {
-        if ( ! $this->cache || ! $this->api) {
+        if (! $this->cache || ! $this->api) {
             // instance was un-serialized, therefore we can't use it
             return;
         }
 
-        $data = $this->cache->getItem($this->cacheKey);
+        $projectKey = $this->getProjectKey();
+        $response   = $this->getResponse($projectKey);
 
-        if (is_array($data)) {
-            $this->collected = $data;
-
-            return;
-        }
-
-        $composerJson = file_get_contents($this->composerPath);
-
-        if ( ! is_string($composerJson)) {
-            $this->collected = null;
-
-            return;
-        }
-
-        $submittedData = json_decode($composerJson, true);
-
-        if ( ! is_array($submittedData)) {
-            $this->collected = null;
-
-            return;
-        }
-
-        $this->collected = $this->api->postComposerDefinitions($submittedData);
-
-        $this->cache->setItem($this->cacheKey, $this->collected);
+        $this->collected = $response;
     }
 
     /**
@@ -159,5 +139,61 @@ class DependencyStatusCollector implements CollectorInterface, \Serializable
         $this->collected    = $data['collected'];
         $this->cacheKey     = $data['cacheKey'];
         $this->composerPath = $data['composerPath'];
+    }
+
+    /**
+     * calculate the project key
+     *
+     * @return string
+     */
+    private function getProjectKey()
+    {
+        $projectKey = $this->cache->getItem($this->cacheKey . static::CACHE_KEY_SUFFIX);
+
+        if ($projectKey) {
+            return $projectKey;
+        }
+
+        $data = json_decode(file_get_contents($this->composerPath), true);
+        $projects = $this->api->api('projects')->all();
+
+        foreach ($projects as $project) {
+            if ($project['name'] == $data['name']) {
+                $projectKey = $project['project_key'];
+                $this->cache->setItem($this->cacheKey . static::CACHE_KEY_SUFFIX, $projectKey);
+                break;
+            }
+        }
+
+        return $projectKey;
+    }
+
+    /**
+     * get the response from the api
+     *
+     * @param  string $projectKey
+     * @return array
+     */
+    private function getResponse($projectKey)
+    {
+        $response = $this->cache->getItem($this->cacheKey . static::CACHE_DATA_SUFFIX);
+
+        if ($response) {
+            return $response;
+        }
+
+        if ($projectKey === null) {
+            $response = $this->api->api('projects')->create($this->composerPath);
+        } else {
+            try {
+                $response = $this->api->api('projects')->update($projectKey, $this->composerPath);
+            } catch (CommunicationException $e) {
+                //fails when project was deleted on versioneye
+                $response = $this->api->api('projects')->create($this->composerPath);
+            }
+        }
+        $this->cache->setItem($this->cacheKey . static::CACHE_DATA_SUFFIX, $response);
+
+        return $response;
     }
 }

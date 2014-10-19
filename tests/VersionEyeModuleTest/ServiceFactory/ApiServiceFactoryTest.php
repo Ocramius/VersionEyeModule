@@ -34,24 +34,8 @@ class ApiServiceFactoryTest extends \PHPUnit_Framework_TestCase
     public function testCreateService()
     {
         $factory        = new ApiServiceFactory();
-        $httpClient     = $this->getMock('Zend\\Http\\Client');
         $serviceLocator = $this->getMock('Zend\\ServiceManager\\ServiceLocatorInterface');
 
-        $serviceLocator
-            ->expects($this->any())
-            ->method('get')
-            ->will($this->returnCallback(function ($serviceName) use ($httpClient) {
-                if ($serviceName === 'Config') {
-                    return array('version_eye_module' => array('api_key' => 'TEST_API_KEY'));
-                }
-
-                if ($serviceName === 'VersionEyeModule\\Service\\HttpClient') {
-                    return $httpClient;
-                }
-
-                throw new \InvalidArgumentException();
-            }));
-
-        $this->assertInstanceOf('VersionEyeModule\\Service\\ApiService', $factory->createService($serviceLocator));
+        $this->assertInstanceOf('Rs\VersionEye\Client', $factory->createService($serviceLocator));
     }
 }
