@@ -33,8 +33,8 @@ use ZendDeveloperTools\Collector\CollectorInterface;
 class DependencyStatusCollector implements CollectorInterface, \Serializable
 {
     const DEFAULT_PRIORITY = 100;
-    const CACHE_KEY_SUFFIX = '.project';
-    const CACHE_DATA_SUFFIX = '.data';
+    const CACHE_KEY_SUFFIX = '-project';
+    const CACHE_DATA_SUFFIX = '-data';
 
     /**
      * @var Client
@@ -108,11 +108,20 @@ class DependencyStatusCollector implements CollectorInterface, \Serializable
     }
 
     /**
+     * @param bool $outdatedFirst
      * @return array|null
      */
-    public function getCollectedDependencyStatuses()
+    public function getCollectedDependencyStatuses($outdatedFirst = false)
     {
-        return $this->collected;
+        $statuses = $this->collected;
+        if ($outdatedFirst && isset($statuses['dependencies'])) {
+            $dependencies = $statuses['dependencies'];
+            usort($dependencies, function ($dependency) {
+                return !$dependency['outdated'];
+            });
+            $statuses['dependencies'] = $dependencies;
+        }
+        return $statuses;
     }
 
     /**
