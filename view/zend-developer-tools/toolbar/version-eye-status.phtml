@@ -1,7 +1,7 @@
 <?php
 /* @var $collector \VersionEyeModule\Collector\DependencyStatusCollector */
 
-$statuses = $collector->getCollectedDependencyStatuses(true);
+$statuses = $collector->getCollectedDependencyStatuses();
 if ( ! $statuses) {
 ?>
 <div class="zdt-toolbar-entry">

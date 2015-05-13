@@ -59,7 +59,7 @@ class DependencyStatusCollectorTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testCollectWithOutdatedFirst()
+    public function testCollectOutdatedOrder()
     {
         $this->http->expects($this->never())->method('request');
 
@@ -86,7 +86,7 @@ class DependencyStatusCollectorTest extends \PHPUnit_Framework_TestCase
                 array('name' => 'outdated' , 'outdated' => true),
                 array('name' => 'not-outdated' , 'outdated' => false)
             )),
-            $this->collector->getCollectedDependencyStatuses(true)
+            $this->collector->getCollectedDependencyStatuses()
         );
     }
 

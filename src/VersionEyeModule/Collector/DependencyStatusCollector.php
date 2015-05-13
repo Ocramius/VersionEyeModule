@@ -108,13 +108,12 @@ class DependencyStatusCollector implements CollectorInterface, \Serializable
     }
 
     /**
-     * @param bool $outdatedFirst
      * @return array|null
      */
-    public function getCollectedDependencyStatuses($outdatedFirst = false)
+    public function getCollectedDependencyStatuses()
     {
         $statuses = $this->collected;
-        if ($outdatedFirst && isset($statuses['dependencies'])) {
+        if (isset($statuses['dependencies'])) {
             $dependencies = $statuses['dependencies'];
             usort($dependencies, function ($dependency) {
                 return !$dependency['outdated'];
