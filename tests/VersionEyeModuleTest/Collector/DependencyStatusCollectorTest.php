@@ -59,6 +59,37 @@ class DependencyStatusCollectorTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testCollectOutdatedOrder()
+    {
+        $this->http->expects($this->never())->method('request');
+
+        $data = array(
+            'dependencies' => array(
+                array('name' => 'not-outdated' , 'outdated' => false),
+                array('name' => 'outdated' , 'outdated' => true)
+            )
+        );
+
+        $this
+            ->cache
+            ->expects($this->atLeastOnce())
+            ->method('getItem')
+            ->will($this->returnValueMap(array(
+                array('test_cache_key'.DependencyStatusCollector::CACHE_KEY_SUFFIX,null,null, 'foo'),
+                array('test_cache_key'.DependencyStatusCollector::CACHE_DATA_SUFFIX,null,null, $data)
+            )));
+
+        $this->collector->collect($this->getMock('Zend\\Mvc\\MvcEvent'));
+
+        $this->assertSame(array(
+            'dependencies' => array(
+                array('name' => 'outdated' , 'outdated' => true),
+                array('name' => 'not-outdated' , 'outdated' => false)
+            )),
+            $this->collector->getCollectedDependencyStatuses()
+        );
+    }
+
     public function testCollectWithValidCache()
     {
         $this->http->expects($this->never())->method('request');

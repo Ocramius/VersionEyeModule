@@ -22,7 +22,8 @@
         "zendframework/zend-developer-tools":   "dev-master",
         "squizlabs/php_codesniffer":            "~1",
         "zendframework/zend-view":              "~2.3",
-        "zendframework/zend-cache":             "~2.3"
+        "zendframework/zend-cache":             "~2.3",
+        "phpunit/phpunit": "~4.2.0"
     },
     "autoload":     {
         "psr-0": {
