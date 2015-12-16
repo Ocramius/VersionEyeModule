@@ -49,7 +49,7 @@ class DependencyStatusCollectorTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->cache     = $this->getMock('Zend\\Cache\\Storage\\StorageInterface');
-        $this->http      = $this->getMock('Rs\VersionEye\Http\ZendClient', array(), array(), '', false);
+        $this->http      = $this->getMock('Rs\VersionEye\Http\HttpClient', array(), array(), '', false);
         $this->api       = new Client($this->http);
         $this->collector = new DependencyStatusCollector(
             $this->api,
