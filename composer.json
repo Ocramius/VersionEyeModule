@@ -13,10 +13,10 @@
         }
     ],
     "require":      {
-        "php":                                  "~5.4",
+        "php":                                  ">=5.4",
         "zendframework/zend-mvc":               "~2.3",
         "zendframework/zend-http":              "~2.3",
-        "digitalkaoz/versioneye-php":           "~0.7"
+        "digitalkaoz/versioneye-php":           "~0.10"
     },
     "require-dev":  {
         "zendframework/zend-developer-tools":   "dev-master",
